@@ -5,12 +5,18 @@
 
 SanyoG1519AudioProcessor::SanyoG1519AudioProcessor()
     : AudioProcessor(
-                     BusesProperties()
-                     .withOutput(
-                                 "Output",
-                                 juce::AudioChannelSet::stereo(),
-                                 true))
+      BusesProperties()
+         .withOutput(
+             "Output",
+             juce::AudioChannelSet::stereo(),
+             true))
 {
+    oscillator.initialise(
+      [](float x)
+      {
+          return std::sin(x);
+      },
+      128);
 }
 
 SanyoG1519AudioProcessor::~SanyoG1519AudioProcessor()
@@ -20,10 +26,20 @@ SanyoG1519AudioProcessor::~SanyoG1519AudioProcessor()
 //=========================================================================
 
 void SanyoG1519AudioProcessor::prepareToPlay(
-                                             double sampleRate,
-                                             int samplesPerBlock)
+    double sampleRate,
+    int samplesPerBlock)
 {
-    juce::ignoreUnused(sampleRate, samplesPerBlock);
+    oscillator.prepare({
+        sampleRate,
+        static_cast<juce::uint32>(samplesPerBlock),
+        2
+    });
+    
+    oscillator.setFrequency(440.0f);
+    
+    sanyoEngine.prepare(sampleRate, samplesPerBlock, 2);
+    
+    sanyoEngine.setSpeed(SanyoEngine::Speed::rpm33);
 }
 
 void SanyoG1519AudioProcessor::releaseResources()
@@ -31,7 +47,7 @@ void SanyoG1519AudioProcessor::releaseResources()
 }
 
 bool SanyoG1519AudioProcessor::isBusesLayoutSupported(
-                                                      const BusesLayout& layouts) const
+    const BusesLayout& layouts) const
 {
     const auto output = layouts.getMainOutputChannelSet();
     
@@ -47,12 +63,16 @@ bool SanyoG1519AudioProcessor::isBusesLayoutSupported(
 //=========================================================================
 
 void SanyoG1519AudioProcessor::processBlock(
-                                            juce::AudioBuffer<float>& buffer,
-                                            juce::MidiBuffer& midiMessages)
+    juce::AudioBuffer<float>& buffer,
+    juce::MidiBuffer& midiMessages)
 {
     juce::ignoreUnused(midiMessages);
     
-    buffer.clear();
+    juce::dsp::AudioBlock<float> audioBlock(buffer);
+    
+    juce::dsp::ProcessContextReplacing<float> context(audioBlock);
+    
+    oscillator.process(context);
 }
 
 //=========================================================================
@@ -119,8 +139,8 @@ const juce::String SanyoG1519AudioProcessor::getProgramName(int index)
 }
 
 void SanyoG1519AudioProcessor::changeProgramName(
-                                                 int index,
-                                                 const juce::String& newName)
+    int index,
+    const juce::String& newName)
 {
     juce::ignoreUnused(index, newName);
 }
@@ -128,14 +148,14 @@ void SanyoG1519AudioProcessor::changeProgramName(
 //=========================================================================
 
 void SanyoG1519AudioProcessor::getStateInformation(
-                                                   juce::MemoryBlock& destData)
+    juce::MemoryBlock& destData)
 {
     juce::ignoreUnused(destData);
 }
 
 void SanyoG1519AudioProcessor::setStateInformation(
-                                                   const void *data,
-                                                   int sizeInBytes)
+    const void *data,
+    int sizeInBytes)
 {
     juce::ignoreUnused(data, sizeInBytes);
 }

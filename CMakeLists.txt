@@ -31,6 +31,9 @@ target_sources(SanyoG1519
         Source/PluginProcessor.h
         Source/PluginEditor.cpp
         Source/PluginEditor.h
+        
+        Source/DSP/SanyoEngine.cpp
+        Source/DSP/SanyoEngine.h
 )
 
 target_compile_definitions(SanyoG1519

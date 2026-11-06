@@ -1,6 +1,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "DSP/SanyoEngine.h"
 
 class SanyoG1519AudioProcessor : public juce::AudioProcessor
 {
@@ -45,6 +46,8 @@ public:
                              int sizeInBytes) override;
     
 private:
-    //=========================================================================
+    juce::dsp::Oscillator<float> oscillator;
+    SanyoEngine sanyoEngine;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SanyoG1519AudioProcessor)
 };
+ 
